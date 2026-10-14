@@ -80,7 +80,7 @@
   .x3-tacho { position: relative; width: 190px; margin-top: 2px; pointer-events: none; }
   .x3-tacho svg { display: block; width: 100%; height: auto; overflow: visible; }
   .x3-tacho text { font-family: inherit; fill: var(--on-dark-muted); font-size: 10px; font-weight: 700; }
-  .x3-tacho-v { position: absolute; left: 0; right: 0; bottom: 6%; text-align: center; display: flex; flex-direction: column; }
+  .x3-tacho-v { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; display: flex; flex-direction: column; }
   .x3-tacho-v b { font-size: 1.55rem; font-weight: 800; letter-spacing: -0.04em; }
   .x3-tacho-v small { font-size: 0.6rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--on-dark-muted); }
   .x3-caption { position: absolute; right: clamp(22px, 3vw, 38px); bottom: 18px; z-index: 2; font-size: 0.72rem; color: var(--on-dark-muted); display: flex; align-items: center; gap: 8px; pointer-events: none; }
@@ -160,8 +160,8 @@
   .x3-rings { position: relative; width: 132px; height: 132px; }
   .x3-rings svg { display: block; width: 100%; height: 100%; }
   .x3-rings-c { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
-  .x3-rings-c b { font-size: 1.15rem; font-weight: 800; letter-spacing: -0.03em; }
-  .x3-rings-c small { font-size: 0.58rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; }
+  .x3-rings-c b { font-size: 0.9rem; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+  .x3-rings-c small { font-size: 0.5rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; opacity: 0.6; }
   .x3-rleg { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
   .x3-rleg-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 7px; align-items: center; font-size: 0.74rem; }
   .x3-rleg-row i { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
@@ -183,7 +183,7 @@
   .total .t-ok { color: #8ff0bf; } .total .t-bad { color: #ff8f86; }
 
   /* ---------- charts ---------- */
-  .x3-chart { position: relative; min-height: 200px; }
+  .x3-chart { position: relative; min-height: 200px; flex: 1 1 auto; }
   .x3-chart svg { display: block; overflow: visible; }
   .x3-chart text { font-family: inherit; font-size: 11px; font-weight: 700; fill: var(--muted); }
   .x3-chart text.strong { fill: var(--ink); font-weight: 800; }
@@ -1862,7 +1862,7 @@
       draws.forEach((fn) => fn());
     }
     function frame(now) {
-      const dt = Math.min(0.05, (now - last) / 1000);
+      const dt = Math.max(0, Math.min(0.05, (now - last) / 1000));
       last = now;
       clock += dt;
       ticks.forEach((fn) => fn(clock, dt));
@@ -2330,7 +2330,7 @@
     cables.forEach((c) => { for (let k = 0; k < 4; k++) { const s = new T.Mesh(new T.SphereGeometry(0.045, 16, 12), pulseMat); P.add(s); pulses.push({ s, curve: c.curve, off: k / 4 }); } });
     let speed = 0.12;
     st.onTick((t) => {
-      pulses.forEach((p) => { p.s.position.copy(p.curve.getPointAt((t * speed + p.off) % 1)); p.s.position.y += 0.055; });
+      pulses.forEach((p) => { const u = (((t * speed + p.off) % 1) + 1) % 1; if (!Number.isFinite(u)) return; p.s.position.copy(p.curve.getPointAt(u)); p.s.position.y += 0.055; });
     });
     st.once();
     return {
@@ -2376,9 +2376,9 @@
 
   function drawTacho(box, val, annual, pace) {
     d3.select(box).select('svg').remove();
-    const W = 220, H = 170, cx = 110, cy = 112, R = 86;
+    const W = 220, H = 196, cx = 110, cy = 112, R = 86;
     const max = annual ? 1 : 2;
-    const sc = d3.scaleLinear([0, max], [-Math.PI * 0.75, Math.PI * 0.75]).clamp(true);
+    const sc = d3.scaleLinear([0, max], [-Math.PI * 0.68, Math.PI * 0.68]).clamp(true);
     const svg = d3.select(box).insert('svg', ':first-child').attr('viewBox', `0 0 ${W} ${H}`);
     const g = svg.append('g').attr('transform', `translate(${cx},${cy})`);
     const arc = (a, b, ri, ro) => d3.arc().innerRadius(ri).outerRadius(ro).startAngle(sc(a)).endAngle(sc(b)).cornerRadius(6)();
@@ -2432,7 +2432,7 @@
   function drawBars(box, points, focus) {
     d3.select(box).selectAll('svg, .x3-tip').remove();
     const w = Math.max(260, box.clientWidth);
-    const h = 220, mt = 22, mb = 22;
+    const h = Math.max(220, Math.min(420, Math.floor(box.clientHeight || 0))), mt = 22, mb = 22;
     const svg = d3.select(box).append('svg').attr('width', '100%').attr('viewBox', `0 0 ${w} ${h}`);
     const x = d3.scaleBand(points.map((p) => p.month), [0, w]).padding(0.26);
     const max = d3.max(points, (p) => Math.max(p.achieved || 0, p.target || 0)) || 1;
