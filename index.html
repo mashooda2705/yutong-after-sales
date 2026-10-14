@@ -2409,8 +2409,8 @@
     const svg = d3.select(box).append('svg').attr('viewBox', `0 0 ${S} ${S}`);
     const g = svg.append('g').attr('transform', `translate(${S / 2},${S / 2})`);
     rings.forEach((rg, i) => {
-      const r = 58 - i * 13;
-      const th = 9;
+      const r = 60 - i * 11;
+      const th = 8;
       const arc = d3.arc().innerRadius(r - th / 2).outerRadius(r + th / 2).cornerRadius(th / 2);
       g.append('path').attr('d', arc({ startAngle: 0, endAngle: Math.PI * 2 })).style('fill', rg.color).style('opacity', 0.14);
       const v = Math.max(0, rg.v || 0);
@@ -2661,7 +2661,7 @@
         { v: m.income_pct, color: '#ff5fa2' },
       ]);
       const c = el('div', 'x3-rings-c');
-      c.append(el('b', null, p1(y.income_pct)), el('small', null, 'YTD income'));
+      c.append(el('b', null, p1(y.income_pct)), el('small', null, 'YTD'));
       rings.appendChild(c);
       const leg = el('div', 'x3-rleg');
       [['#ff5fa2', MONTH_LONG[mRef], m.income_pct], ['#7c5cff', 'Year to date', y.income_pct], ['#1fae78', 'Annual (pace ' + p0(a.pace.income) + ')', a.income_pct]].forEach(([color, label, v]) => {
